@@ -13,7 +13,7 @@
             text-align: center;
             margin-bottom: 20px;
         }
-        #canvasEdges, #canvasPixelation {
+        #canvasEdges, #canvasPixelation, #video {
             display: none;
         }
     </style>
@@ -21,6 +21,7 @@
 <body>
     <h1>Webcam Processing</h1>
     <div class="controls">
+        <button id="toggleVideoButton">Toggle Video</button>
         <button id="toggleEdgesButton">Toggle Edge Detection</button>
         <button id="togglePixelationButton">Toggle Pixelation</button>
     </div>
@@ -35,9 +36,11 @@
         const ctxEdges = canvasEdges.getContext('2d');
         const canvasPixelation = document.getElementById('canvasPixelation');
         const ctxPixelation = canvasPixelation.getContext('2d');
+        const toggleVideoButton = document.getElementById('toggleVideoButton');
         const toggleEdgesButton = document.getElementById('toggleEdgesButton');
         const togglePixelationButton = document.getElementById('togglePixelationButton');
         let streaming = false;
+        let showVideo = false;
         let detectEdges = false;
         let applyPixelation = false;
 
@@ -97,6 +100,11 @@
 
             requestAnimationFrame(processFrame);
         }
+
+        toggleVideoButton.addEventListener('click', () => {
+            showVideo = !showVideo;
+            video.style.display = showVideo ? 'block' : 'none';
+        });
 
         toggleEdgesButton.addEventListener('click', () => {
             detectEdges = !detectEdges;
