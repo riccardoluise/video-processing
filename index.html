@@ -13,6 +13,9 @@
             text-align: center;
             margin-bottom: 20px;
         }
+        #canvasEdges, #canvasPixelation {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -97,10 +100,12 @@
 
         toggleEdgesButton.addEventListener('click', () => {
             detectEdges = !detectEdges;
+            canvasEdges.style.display = detectEdges ? 'block' : 'none';
         });
 
         togglePixelationButton.addEventListener('click', () => {
             applyPixelation = !applyPixelation;
+            canvasPixelation.style.display = applyPixelation ? 'block' : 'none';
         });
 
         video.addEventListener('canplay', () => {
