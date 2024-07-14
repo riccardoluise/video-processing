@@ -10,7 +10,7 @@
         #canvasEdges, #canvasPixelation, #canvasBlur, #canvasInvert, #video { display: none; }
     </style>
 </head>
-<body>
+<body cz-shortcut-listen="true">
     <h1>Webcam Processing</h1>
     <div class="controls">
         <button id="toggleVideoButton">Toggle Video (HTML)</button>
@@ -18,13 +18,15 @@
         <button id="togglePixelationButton">Toggle Pixelation (Manual)</button>
         <button id="toggleBlurButton">Toggle Blur (OpenCV)</button>
         <button id="toggleInvertButton">Toggle Invert Colors (Manual)</button>
+        <button id="toggleNoiseButton">Toggle Noise Effect (p5.js)</button>
     </div>
-    <video id="video" width="640" height="480" autoplay></video>
+    <video id="video" width="640" height="480" autoplay=""></video>
     <canvas id="canvasEdges" width="640" height="480"></canvas>
     <canvas id="canvasPixelation" width="640" height="480"></canvas>
     <canvas id="canvasBlur" width="640" height="480"></canvas>
     <canvas id="canvasInvert" width="640" height="480"></canvas>
-    <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+    <script async="" src="https://docs.opencv.org/4.x/opencv.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
         const video = document.getElementById('video'),
               canvasEdges = document.getElementById('canvasEdges'), ctxEdges = canvasEdges.getContext('2d'),
@@ -36,9 +38,10 @@
                   toggleEdgesButton: document.getElementById('toggleEdgesButton'),
                   togglePixelationButton: document.getElementById('togglePixelationButton'),
                   toggleBlurButton: document.getElementById('toggleBlurButton'),
-                  toggleInvertButton: document.getElementById('toggleInvertButton')
+                  toggleInvertButton: document.getElementById('toggleInvertButton'),
+                  toggleNoiseButton: document.getElementById('toggleNoiseButton')
               };
-        let streaming = false, showVideo = false, detectEdges = false, applyPixelation = false, applyBlur = false, invertColors = false;
+        let streaming = false, showVideo = false, detectEdges = false, applyPixelation = false, applyBlur = false, invertColors = false, applyNoise = false, noiseSketchInstance = null;
 
         function startVideo() {
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -123,6 +126,21 @@
             canvasInvert.style.display = invertColors ? 'block' : 'none';
         });
 
+        buttons.toggleNoiseButton.addEventListener('click', () => {
+            applyNoise = !applyNoise;
+            if (applyNoise) {
+                if (!noiseSketchInstance) {
+                    setupNoiseEffect();
+                } else {
+                    document.querySelector('.p5Canvas').style.display = 'block';
+                }
+            } else {
+                if (noiseSketchInstance) {
+                    document.querySelector('.p5Canvas').style.display = 'none';
+                }
+            }
+        });
+
         video.addEventListener('canplay', () => {
             if (!streaming) {
                 streaming = true;
@@ -131,6 +149,31 @@
         });
 
         startVideo();
+
+        function setupNoiseEffect() {
+            noiseSketchInstance = new p5((sketch) => {
+                let capture;
+                sketch.setup = function () {
+                    let cnv = sketch.createCanvas(640, 480);
+                    cnv.parent(document.body);
+                    capture = sketch.createCapture(sketch.VIDEO);
+                    capture.size(640, 480);
+                    capture.hide();
+                };
+
+                sketch.draw = function () {
+                    sketch.background(0);
+                    let w = capture.width;
+                    let h = capture.height;
+                    let skip = 20;
+                    sketch.translate(sketch.width / 2 - w / 2, sketch.height / 2 - h / 2);
+                    for (let i = 0; i < w; i += skip) {
+                        let rec = capture.get(sketch.noise(i * 100) * w, 0, skip, h);
+                        sketch.image(rec, i, 0, skip, h);
+                    }
+                };
+            });
+        }
     </script>
 </body>
 </html>
