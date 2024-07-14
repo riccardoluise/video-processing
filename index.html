@@ -5,17 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webcam Processing</title>
     <style>
-        video, canvas {
-            display: block;
-            margin: 20px auto;
-        }
-        .controls {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        #canvasEdges, #canvasPixelation, #canvasBlur, #canvasInvert, #video {
-            display: none;
-        }
+        video, canvas { display: block; margin: 20px auto; }
+        .controls { text-align: center; margin-bottom: 20px; }
+        #canvasEdges, #canvasPixelation, #canvasBlur, #canvasInvert, #video { display: none; }
     </style>
 </head>
 <body>
@@ -32,29 +24,19 @@
     <canvas id="canvasPixelation" width="640" height="480"></canvas>
     <canvas id="canvasBlur" width="640" height="480"></canvas>
     <canvas id="canvasInvert" width="640" height="480"></canvas>
-
     <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
     <script>
-        const video = document.getElementById('video');
-        const canvasEdges = document.getElementById('canvasEdges');
-        const ctxEdges = canvasEdges.getContext('2d');
-        const canvasPixelation = document.getElementById('canvasPixelation');
-        const ctxPixelation = canvasPixelation.getContext('2d');
-        const canvasBlur = document.getElementById('canvasBlur');
-        const ctxBlur = canvasBlur.getContext('2d');
-        const canvasInvert = document.getElementById('canvasInvert');
-        const ctxInvert = canvasInvert.getContext('2d');
-        const toggleVideoButton = document.getElementById('toggleVideoButton');
-        const toggleEdgesButton = document.getElementById('toggleEdgesButton');
-        const togglePixelationButton = document.getElementById('togglePixelationButton');
-        const toggleBlurButton = document.getElementById('toggleBlurButton');
-        const toggleInvertButton = document.getElementById('toggleInvertButton');
-        let streaming = false;
-        let showVideo = false;
-        let detectEdges = false;
-        let applyPixelation = false;
-        let applyBlur = false;
-        let invertColors = false;
+        const video = document.getElementById('video'),
+              canvasEdges = document.getElementById('canvasEdges'), ctxEdges = canvasEdges.getContext('2d'),
+              canvasPixelation = document.getElementById('canvasPixelation'), ctxPixelation = canvasPixelation.getContext('2d'),
+              canvasBlur = document.getElementById('canvasBlur'), ctxBlur = canvasBlur.getContext('2d'),
+              canvasInvert = document.getElementById('canvasInvert'), ctxInvert = canvasInvert.getContext('2d'),
+              toggleVideoButton = document.getElementById('toggleVideoButton'),
+              toggleEdgesButton = document.getElementById('toggleEdgesButton'),
+              togglePixelationButton = document.getElementById('togglePixelationButton'),
+              toggleBlurButton = document.getElementById('toggleBlurButton'),
+              toggleInvertButton = document.getElementById('toggleInvertButton');
+        let streaming = false, showVideo = false, detectEdges = false, applyPixelation = false, applyBlur = false, invertColors = false;
 
         function startVideo() {
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -62,80 +44,55 @@
                     video.srcObject = stream;
                     video.play();
                 })
-                .catch(err => {
-                    console.error("Error accessing the camera: " + err);
-                });
+                .catch(err => console.error("Error accessing the camera: " + err));
         }
 
         function processFrame() {
             if (!streaming) return;
-
-            // Process Edge Detection
             ctxEdges.drawImage(video, 0, 0, canvasEdges.width, canvasEdges.height);
             if (detectEdges && typeof cv !== 'undefined') {
-                let src = cv.imread(canvasEdges);
-                let dst = new cv.Mat();
+                let src = cv.imread(canvasEdges), dst = new cv.Mat();
                 cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY);
                 cv.Canny(src, dst, 50, 100);
                 cv.imshow('canvasEdges', dst);
-                src.delete();
-                dst.delete();
+                src.delete(); dst.delete();
             }
 
-            // Process Pixelation
             ctxPixelation.drawImage(video, 0, 0, canvasPixelation.width, canvasPixelation.height);
             if (applyPixelation) {
-                let imageData = ctxPixelation.getImageData(0, 0, canvasPixelation.width, canvasPixelation.height);
-                let data = imageData.data;
-                let pixelSize = 20;
-
-                for (let y = 0; y < canvasPixelation.height; y += pixelSize) {
+                let imageData = ctxPixelation.getImageData(0, 0, canvasPixelation.width, canvasPixelation.height), data = imageData.data, pixelSize = 20;
+                for (let y = 0; y < canvasPixelation.height; y += pixelSize)
                     for (let x = 0; x < canvasPixelation.width; x += pixelSize) {
-                        let red = data[((canvasPixelation.width * y) + x) * 4];
-                        let green = data[((canvasPixelation.width * y) + x) * 4 + 1];
-                        let blue = data[((canvasPixelation.width * y) + x) * 4 + 2];
-
-                        for (let n = 0; n < pixelSize; n++) {
-                            for (let m = 0; m < pixelSize; m++) {
+                        let red = data[((canvasPixelation.width * y) + x) * 4], green = data[((canvasPixelation.width * y) + x) * 4 + 1], blue = data[((canvasPixelation.width * y) + x) * 4 + 2];
+                        for (let n = 0; n < pixelSize; n++)
+                            for (let m = 0; m < pixelSize; m++)
                                 if (x + m < canvasPixelation.width && y + n < canvasPixelation.height) {
                                     data[((canvasPixelation.width * (y + n)) + (x + m)) * 4] = red;
                                     data[((canvasPixelation.width * (y + n)) + (x + m)) * 4 + 1] = green;
                                     data[((canvasPixelation.width * (y + n)) + (x + m)) * 4 + 2] = blue;
                                 }
-                            }
-                        }
                     }
-                }
-
                 ctxPixelation.putImageData(imageData, 0, 0);
             }
 
-            // Process Blur
             ctxBlur.drawImage(video, 0, 0, canvasBlur.width, canvasBlur.height);
             if (applyBlur && typeof cv !== 'undefined') {
-                let src = cv.imread(canvasBlur);
-                let dst = new cv.Mat();
+                let src = cv.imread(canvasBlur), dst = new cv.Mat();
                 cv.GaussianBlur(src, dst, new cv.Size(15, 15), 0);
                 cv.imshow('canvasBlur', dst);
-                src.delete();
-                dst.delete();
+                src.delete(); dst.delete();
             }
 
-            // Process Invert Colors
             ctxInvert.drawImage(video, 0, 0, canvasInvert.width, canvasInvert.height);
             if (invertColors) {
-                let imageData = ctxInvert.getImageData(0, 0, canvasInvert.width, canvasInvert.height);
-                let data = imageData.data;
-
+                let imageData = ctxInvert.getImageData(0, 0, canvasInvert.width, canvasInvert.height), data = imageData.data;
                 for (let i = 0; i < data.length; i += 4) {
-                    data[i] = 255 - data[i];     // Invert Red
-                    data[i + 1] = 255 - data[i + 1]; // Invert Green
-                    data[i + 2] = 255 - data[i + 2]; // Invert Blue
+                    data[i] = 255 - data[i];
+                    data[i + 1] = 255 - data[i + 1];
+                    data[i + 2] = 255 - data[i + 2];
                 }
-
                 ctxInvert.putImageData(imageData, 0, 0);
             }
-
             requestAnimationFrame(processFrame);
         }
 
