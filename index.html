@@ -3,28 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcam Edge Detection</title>
+    <title>Webcam Processing</title>
     <style>
         video, canvas {
             display: block;
-            margin: 0 auto;
+            margin: 0 auto 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Webcam Edge Detection</h1>
+    <h1>Webcam Processing</h1>
     <video id="video" width="640" height="480" autoplay></video>
-    <canvas id="canvas" width="640" height="480"></canvas>
-    <button id="toggleButton">Toggle Edge Detection</button>
+    <canvas id="canvasEdges" width="640" height="480"></canvas>
+    <canvas id="canvasPixelation" width="640" height="480"></canvas>
+    <button id="toggleEdgesButton">Toggle Edge Detection</button>
+    <button id="togglePixelationButton">Toggle Pixelation</button>
 
     <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
     <script>
         const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const toggleButton = document.getElementById('toggleButton');
+        const canvasEdges = document.getElementById('canvasEdges');
+        const ctxEdges = canvasEdges.getContext('2d');
+        const canvasPixelation = document.getElementById('canvasPixelation');
+        const ctxPixelation = canvasPixelation.getContext('2d');
+        const toggleEdgesButton = document.getElementById('toggleEdgesButton');
+        const togglePixelationButton = document.getElementById('togglePixelationButton');
         let streaming = false;
         let detectEdges = false;
+        let applyPixelation = false;
 
         function startVideo() {
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -39,21 +45,56 @@
 
         function processFrame() {
             if (!streaming) return;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Process Edge Detection
+            ctxEdges.drawImage(video, 0, 0, canvasEdges.width, canvasEdges.height);
             if (detectEdges && typeof cv !== 'undefined') {
-                let src = cv.imread(canvas);
+                let src = cv.imread(canvasEdges);
                 let dst = new cv.Mat();
                 cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY);
                 cv.Canny(src, dst, 50, 100);
-                cv.imshow('canvas', dst);
+                cv.imshow('canvasEdges', dst);
                 src.delete();
                 dst.delete();
             }
+
+            // Process Pixelation
+            ctxPixelation.drawImage(video, 0, 0, canvasPixelation.width, canvasPixelation.height);
+            if (applyPixelation) {
+                let imageData = ctxPixelation.getImageData(0, 0, canvasPixelation.width, canvasPixelation.height);
+                let data = imageData.data;
+                let pixelSize = 5;
+
+                for (let y = 0; y < canvasPixelation.height; y += pixelSize) {
+                    for (let x = 0; x < canvasPixelation.width; x += pixelSize) {
+                        let red = data[((canvasPixelation.width * y) + x) * 4];
+                        let green = data[((canvasPixelation.width * y) + x) * 4 + 1];
+                        let blue = data[((canvasPixelation.width * y) + x) * 4 + 2];
+
+                        for (let n = 0; n < pixelSize; n++) {
+                            for (let m = 0; m < pixelSize; m++) {
+                                if (x + m < canvasPixelation.width && y + n < canvasPixelation.height) {
+                                    data[((canvasPixelation.width * (y + n)) + (x + m)) * 4] = red;
+                                    data[((canvasPixelation.width * (y + n)) + (x + m)) * 4 + 1] = green;
+                                    data[((canvasPixelation.width * (y + n)) + (x + m)) * 4 + 2] = blue;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                ctxPixelation.putImageData(imageData, 0, 0);
+            }
+
             requestAnimationFrame(processFrame);
         }
 
-        toggleButton.addEventListener('click', () => {
+        toggleEdgesButton.addEventListener('click', () => {
             detectEdges = !detectEdges;
+        });
+
+        togglePixelationButton.addEventListener('click', () => {
+            applyPixelation = !applyPixelation;
         });
 
         video.addEventListener('canplay', () => {
