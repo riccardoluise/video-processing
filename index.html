@@ -7,17 +7,23 @@
     <style>
         video, canvas {
             display: block;
-            margin: 0 auto 20px;
+            margin: 20px auto;
+        }
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Webcam Processing</h1>
+    <div class="controls">
+        <button id="toggleEdgesButton">Toggle Edge Detection</button>
+        <button id="togglePixelationButton">Toggle Pixelation</button>
+    </div>
     <video id="video" width="640" height="480" autoplay></video>
     <canvas id="canvasEdges" width="640" height="480"></canvas>
     <canvas id="canvasPixelation" width="640" height="480"></canvas>
-    <button id="toggleEdgesButton">Toggle Edge Detection</button>
-    <button id="togglePixelationButton">Toggle Pixelation</button>
 
     <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
     <script>
