@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Edge Detection</title>
+    <style>
+        video, canvas {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Webcam Edge Detection</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <button id="toggleButton">Toggle Edge Detection</button>
+
+    <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const toggleButton = document.getElementById('toggleButton');
+        let streaming = false;
+        let detectEdges = false;
+
+        function startVideo() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(err => {
+                    console.error("Error accessing the camera: " + err);
+                });
+        }
+
+        function processFrame() {
+            if (!streaming) return;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            if (detectEdges && typeof cv !== 'undefined') {
+                let src = cv.imread(canvas);
+                let dst = new cv.Mat();
+                cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY);
+                cv.Canny(src, dst, 50, 100);
+                cv.imshow('canvas', dst);
+                src.delete();
+                dst.delete();
+            }
+            requestAnimationFrame(processFrame);
+        }
+
+        toggleButton.addEventListener('click', () => {
+            detectEdges = !detectEdges;
+        });
+
+        video.addEventListener('canplay', () => {
+            if (!streaming) {
+                streaming = true;
+                processFrame();
+            }
+        });
+
+        startVideo();
+    </script>
+</body>
+</html>
