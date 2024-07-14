@@ -63,7 +63,7 @@
             if (applyPixelation) {
                 let imageData = ctxPixelation.getImageData(0, 0, canvasPixelation.width, canvasPixelation.height);
                 let data = imageData.data;
-                let pixelSize = 5;
+                let pixelSize = 20;
 
                 for (let y = 0; y < canvasPixelation.height; y += pixelSize) {
                     for (let x = 0; x < canvasPixelation.width; x += pixelSize) {
