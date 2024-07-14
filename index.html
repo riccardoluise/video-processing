@@ -31,11 +31,13 @@
               canvasPixelation = document.getElementById('canvasPixelation'), ctxPixelation = canvasPixelation.getContext('2d'),
               canvasBlur = document.getElementById('canvasBlur'), ctxBlur = canvasBlur.getContext('2d'),
               canvasInvert = document.getElementById('canvasInvert'), ctxInvert = canvasInvert.getContext('2d'),
-              toggleVideoButton = document.getElementById('toggleVideoButton'),
-              toggleEdgesButton = document.getElementById('toggleEdgesButton'),
-              togglePixelationButton = document.getElementById('togglePixelationButton'),
-              toggleBlurButton = document.getElementById('toggleBlurButton'),
-              toggleInvertButton = document.getElementById('toggleInvertButton');
+              buttons = {
+                  toggleVideoButton: document.getElementById('toggleVideoButton'),
+                  toggleEdgesButton: document.getElementById('toggleEdgesButton'),
+                  togglePixelationButton: document.getElementById('togglePixelationButton'),
+                  toggleBlurButton: document.getElementById('toggleBlurButton'),
+                  toggleInvertButton: document.getElementById('toggleInvertButton')
+              };
         let streaming = false, showVideo = false, detectEdges = false, applyPixelation = false, applyBlur = false, invertColors = false;
 
         function startVideo() {
@@ -96,27 +98,27 @@
             requestAnimationFrame(processFrame);
         }
 
-        toggleVideoButton.addEventListener('click', () => {
+        buttons.toggleVideoButton.addEventListener('click', () => {
             showVideo = !showVideo;
             video.style.display = showVideo ? 'block' : 'none';
         });
 
-        toggleEdgesButton.addEventListener('click', () => {
+        buttons.toggleEdgesButton.addEventListener('click', () => {
             detectEdges = !detectEdges;
             canvasEdges.style.display = detectEdges ? 'block' : 'none';
         });
 
-        togglePixelationButton.addEventListener('click', () => {
+        buttons.togglePixelationButton.addEventListener('click', () => {
             applyPixelation = !applyPixelation;
             canvasPixelation.style.display = applyPixelation ? 'block' : 'none';
         });
 
-        toggleBlurButton.addEventListener('click', () => {
+        buttons.toggleBlurButton.addEventListener('click', () => {
             applyBlur = !applyBlur;
             canvasBlur.style.display = applyBlur ? 'block' : 'none';
         });
 
-        toggleInvertButton.addEventListener('click', () => {
+        buttons.toggleInvertButton.addEventListener('click', () => {
             invertColors = !invertColors;
             canvasInvert.style.display = invertColors ? 'block' : 'none';
         });
