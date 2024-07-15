@@ -10,7 +10,7 @@
         #canvasEdges, #canvasPixelation, #canvasBlur, #canvasInvert, #video { display: none; }
     </style>
 </head>
-<body cz-shortcut-listen="true">
+<body>
     <h1>Webcam Processing</h1>
     <div class="controls">
         <button id="toggleVideoButton">Toggle Video (HTML)</button>
@@ -19,6 +19,7 @@
         <button id="toggleBlurButton">Toggle Blur (OpenCV)</button>
         <button id="toggleInvertButton">Toggle Invert Colors (Manual)</button>
         <button id="toggleNoiseButton">Toggle Noise Effect (p5.js)</button>
+        <button id="toggleSliceButton">Toggle Slice Effect (p5.js)</button>
     </div>
     <video id="video" autoplay></video>
     <canvas id="canvasEdges"></canvas>
@@ -39,9 +40,10 @@
                   togglePixelationButton: document.getElementById('togglePixelationButton'),
                   toggleBlurButton: document.getElementById('toggleBlurButton'),
                   toggleInvertButton: document.getElementById('toggleInvertButton'),
-                  toggleNoiseButton: document.getElementById('toggleNoiseButton')
+                  toggleNoiseButton: document.getElementById('toggleNoiseButton'),
+                  toggleSliceButton: document.getElementById('toggleSliceButton')
               };
-        let streaming = false, showVideo = false, detectEdges = false, applyPixelation = false, applyBlur = false, invertColors = false, applyNoise = false, noiseSketchInstance = null;
+        let streaming = false, showVideo = false, detectEdges = false, applyPixelation = false, applyBlur = false, invertColors = false, applyNoise = false, applySlice = false, noiseSketchInstance = null, sliceSketchInstance = null;
 
         function startVideo() {
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -148,11 +150,27 @@
                 if (!noiseSketchInstance) {
                     setupNoiseEffect();
                 } else {
-                    document.querySelector('.p5Canvas').style.display = 'block';
+                    document.querySelector('#noiseCanvas').style.display = 'block';
                 }
             } else {
                 if (noiseSketchInstance) {
-                    document.querySelector('.p5Canvas').style.display = 'none';
+                    document.querySelector('#noiseCanvas').style.display = 'none';
+                }
+            }
+        });
+
+        buttons.toggleSliceButton.addEventListener('click', () => {
+            applySlice = !applySlice;
+            if (applySlice) {
+                if (!sliceSketchInstance) {
+                    setupSliceEffect();
+                } else {
+                    sliceSketchInstance.resetSlices();
+                    document.querySelector('#sliceCanvas').style.display = 'block';
+                }
+            } else {
+                if (sliceSketchInstance) {
+                    document.querySelector('#sliceCanvas').style.display = 'none';
                 }
             }
         });
@@ -172,6 +190,7 @@
                 let capture;
                 sketch.setup = function () {
                     let cnv = sketch.createCanvas(640, 480);
+                    cnv.id('noiseCanvas');
                     cnv.parent(document.body);
                     capture = sketch.createCapture(sketch.VIDEO);
                     capture.size(640, 480);
@@ -187,6 +206,50 @@
                     for (let i = 0; i < w; i += skip) {
                         let rec = capture.get(sketch.noise(i * 100) * w, 0, skip, h);
                         sketch.image(rec, i, 0, skip, h);
+                    }
+                };
+            });
+        }
+
+        function setupSliceEffect() {
+            sliceSketchInstance = new p5((sketch) => {
+                let capture;
+                let slices = [];
+                let totalWidth = 0;
+
+                sketch.setup = function () {
+                    let cnv = sketch.createCanvas(640, 480);
+                    cnv.id('sliceCanvas');
+                    cnv.parent(document.body);
+                    capture = sketch.createCapture(sketch.VIDEO);
+                    capture.size(640, 480);
+                    capture.hide();
+                    sketch.resetSlices();
+                };
+
+                sketch.resetSlices = function () {
+                    slices = [];
+                    totalWidth = 0;
+                    while (totalWidth < sketch.width) {
+                        let sliceWidth = sketch.floor(sketch.random(1, 101));
+                        if (totalWidth + sliceWidth > sketch.width) {
+                            sliceWidth = sketch.width - totalWidth;
+                        }
+                        slices.push({
+                            sourceX: sketch.floor(sketch.random(sketch.width - sliceWidth)),
+                            width: sliceWidth
+                        });
+                        totalWidth += sliceWidth;
+                    }
+                };
+
+                sketch.draw = function () {
+                    sketch.background(0);
+                    let destX = 0;
+                    for (let slice of slices) {
+                        let img = capture.get(slice.sourceX, 0, slice.width, sketch.height);
+                        sketch.image(img, destX, 0);
+                        destX += slice.width;
                     }
                 };
             });
