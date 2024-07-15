@@ -315,6 +315,50 @@
             }
           },
         },
+        {
+  title: "Sensore di Movimento (Pixel)",
+  sketch: (s) => {
+    let video;
+    let prevFrame;
+    let threshold = 50;
+
+    s.setup = () => {
+      s.createCanvas(640, 480);
+      video = s.createCapture(s.VIDEO);
+      video.size(s.width, s.height);
+      video.hide();
+      prevFrame = s.createImage(s.width, s.height);
+    };
+
+    s.draw = () => {
+      s.background(0);
+      video.loadPixels();
+      prevFrame.loadPixels();
+
+      s.loadPixels();
+      for (let x = 0; x < video.width; x++) {
+        for (let y = 0; y < video.height; y++) {
+          let i = (x + y * video.width) * 4;
+          let currR = video.pixels[i];
+          let currG = video.pixels[i + 1];
+          let currB = video.pixels[i + 2];
+
+          let prevR = prevFrame.pixels[i];
+          let prevG = prevFrame.pixels[i + 1];
+          let prevB = prevFrame.pixels[i + 2];
+
+          let diff = s.dist(currR, currG, currB, prevR, prevG, prevB);
+          if (diff > threshold) {
+            s.set(x, y, s.color(255));
+          }
+        }
+      }
+      s.updatePixels();
+
+      prevFrame.copy(video, 0, 0, s.width, s.height, 0, 0, s.width, s.height);
+    };
+  },
+}
       ];
 
       let opencvEffects = [
