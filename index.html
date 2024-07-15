@@ -1,389 +1,540 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Webcam Processing</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script async src="https://docs.opencv.org/4.5.2/opencv.js" onload="onOpenCvReady();"></script>
+    <script
+      async
+      src="https://docs.opencv.org/4.5.2/opencv.js"
+      onload="onOpenCvReady();"
+    ></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        button { margin: 10px; padding: 10px 20px; font-size: 16px; }
-        .active { background-color: #4CAF50; color: white; }
-        canvas { display: block; margin: 0 auto; }
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+      button {
+        margin: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+      }
+      .active {
+        background-color: #4caf50;
+        color: white;
+      }
+      canvas {
+        display: block;
+        margin: 0 auto;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Webcam Processing</h1>
     <div id="buttons-container"></div>
     <div id="sketch-container"></div>
 
     <script>
-        let sketches = [
-            {
-                title: "Cerchio Casuale",
-                sketch: (s) => {
-                    let randomSize;
-                    s.setup = () => {
-                        s.createCanvas(400, 400);
-                        randomSize = s.random(20, 100);
-                    };
-                    s.draw = () => {
-                        s.background(220);
-                        s.fill(255, 0, 0);
-                        s.ellipse(s.width/2, s.height/2, randomSize);
-                    };
-                }
-            },
-            {
-                title: "Quadrato Colorato",
-                sketch: (s) => {
-                    let randomColor;
-                    s.setup = () => {
-                        s.createCanvas(400, 400);
-                        randomColor = s.color(s.random(255), s.random(255), s.random(255));
-                    };
-                    s.draw = () => {
-                        s.background(200);
-                        s.fill(randomColor);
-                        s.rect(100, 100, 200, 200);
-                    };
-                }
-            },
-            {
-                title: "Linee Casuali",
-                sketch: (s) => {
-                    let randomLines;
-                    s.setup = () => {
-                        s.createCanvas(400, 400);
-                        randomLines = s.int(s.random(5, 20));
-                    };
-                    s.draw = () => {
-                        s.background(240);
-                        s.stroke(0);
-                        for (let i = 0; i < randomLines; i++) {
-                            s.line(0, i * s.height / randomLines, s.width, i * s.height / randomLines);
-                        }
-                    };
-                }
-            },
-            {
-                title: "Effetto Scia Fotocamera",
-                sketch: (s) => {
-                    let video;
-                    s.setup = () => {
-                        s.createCanvas(640, 480);
-                        video = s.createCapture(s.VIDEO);
-                        video.size(s.width, s.height);
-                        video.hide();
-                        s.background(0);
-                    };
-                    s.draw = () => {
-                        s.push();
-                        s.translate(s.width, 0);
-                        s.scale(-1, 1);
-                        s.tint(255, 2);
-                        s.image(video, 0, 0, s.width, s.height);
-                        s.pop();
-                    };
-                }
-            },
-            {
-                title: "Noise Effect",
-                sketch: (s) => {
-                    let capture;
-                    let skip;
+      let sketches = [
+        {
+          title: "Cerchio Casuale",
+          sketch: (s) => {
+            let randomSize;
+            s.setup = () => {
+              s.createCanvas(400, 400);
+              randomSize = s.random(20, 100);
+            };
+            s.draw = () => {
+              s.background(220);
+              s.fill(255, 0, 0);
+              s.ellipse(s.width / 2, s.height / 2, randomSize);
+            };
+          },
+        },
+        {
+          title: "Quadrato Colorato",
+          sketch: (s) => {
+            let randomColor;
+            s.setup = () => {
+              s.createCanvas(400, 400);
+              randomColor = s.color(
+                s.random(255),
+                s.random(255),
+                s.random(255)
+              );
+            };
+            s.draw = () => {
+              s.background(200);
+              s.fill(randomColor);
+              s.rect(100, 100, 200, 200);
+            };
+          },
+        },
+        {
+          title: "Linee Casuali",
+          sketch: (s) => {
+            let randomLines;
+            s.setup = () => {
+              s.createCanvas(400, 400);
+              randomLines = s.int(s.random(5, 20));
+            };
+            s.draw = () => {
+              s.background(240);
+              s.stroke(0);
+              for (let i = 0; i < randomLines; i++) {
+                s.line(
+                  0,
+                  (i * s.height) / randomLines,
+                  s.width,
+                  (i * s.height) / randomLines
+                );
+              }
+            };
+          },
+        },
+        {
+          title: "Effetto Scia Fotocamera",
+          sketch: (s) => {
+            let video;
+            s.setup = () => {
+              s.createCanvas(640, 480);
+              video = s.createCapture(s.VIDEO);
+              video.size(s.width, s.height);
+              video.hide();
+              s.background(0);
+            };
+            s.draw = () => {
+              s.push();
+              s.translate(s.width, 0);
+              s.scale(-1, 1);
+              s.tint(255, 2);
+              s.image(video, 0, 0, s.width, s.height);
+              s.pop();
+            };
+          },
+        },
+        {
+          title: "Noise Effect",
+          sketch: (s) => {
+            let capture;
+            let skip;
 
-                    s.setup = function () {
-                        s.createCanvas(640, 480);
-                        capture = s.createCapture(s.VIDEO);
-                        capture.size(640, 480);
-                        capture.hide();
-                        s.resetSketch();
-                    };
+            s.setup = function () {
+              s.createCanvas(640, 480);
+              capture = s.createCapture(s.VIDEO);
+              capture.size(640, 480);
+              capture.hide();
+              s.resetSketch();
+            };
 
-                    s.resetSketch = function () {
-                        skip = s.floor(s.random(10, 30));
-                    };
+            s.resetSketch = function () {
+              skip = s.floor(s.random(10, 30));
+            };
 
-                    s.draw = function () {
-                        s.background(0);
-                        let w = capture.width;
-                        let h = capture.height;
-                        s.translate(s.width / 2 - w / 2, s.height / 2 - h / 2);
-                        for (let i = 0; i < w; i += skip) {
-                            let rec = capture.get(s.noise(i * 100) * w, 0, skip, h);
-                            s.image(rec, i, 0, skip, h);
-                        }
-                    };
-                }
-            },
-            {
-                title: "Slice Effect",
-                sketch: (s) => {
-                    let capture;
-                    let slices = [];
-                    let sliceWidth;
+            s.draw = function () {
+              s.background(0);
+              let w = capture.width;
+              let h = capture.height;
+              s.translate(s.width / 2 - w / 2, s.height / 2 - h / 2);
+              for (let i = 0; i < w; i += skip) {
+                let rec = capture.get(s.noise(i * 100) * w, 0, skip, h);
+                s.image(rec, i, 0, skip, h);
+              }
+            };
+          },
+        },
+        {
+          title: "Slice Effect",
+          sketch: (s) => {
+            let capture;
+            let slices = [];
+            let sliceWidth;
 
-                    s.setup = function () {
-                        s.createCanvas(640, 480);
-                        capture = s.createCapture(s.VIDEO);
-                        capture.size(640, 480);
-                        capture.hide();
-                        s.resetSketch();
-                    };
+            s.setup = function () {
+              s.createCanvas(640, 480);
+              capture = s.createCapture(s.VIDEO);
+              capture.size(640, 480);
+              capture.hide();
+              s.resetSketch();
+            };
 
-                    s.resetSketch = function () {
-                        slices = [];
-                        sliceWidth = s.floor(s.random(6, 41));
-                        let numSlices = Math.floor(s.width / sliceWidth);
-                        let sourcePositions = Array.from(
-                            { length: numSlices },
-                            (_, i) => i * sliceWidth
-                        );
-                        for (let i = sourcePositions.length - 1; i > 0; i--) {
-                            const j = Math.floor(Math.random() * (i + 1));
-                            [sourcePositions[i], sourcePositions[j]] = [
-                                sourcePositions[j],
-                                sourcePositions[i],
-                            ];
-                        }
-                        for (let i = 0; i < numSlices; i++) {
-                            slices.push({
-                                sourceX: sourcePositions[i],
-                                destX: i * sliceWidth,
-                                width: sliceWidth,
-                            });
-                        }
-                        let remainingPixels = s.width - numSlices * sliceWidth;
-                        if (remainingPixels > 0 && slices.length > 0) {
-                            let lastSlice = slices[slices.length - 1];
-                            lastSlice.width += remainingPixels;
-                        }
-                    };
-
-                    s.draw = function () {
-                        s.background(0);
-                        for (let slice of slices) {
-                            let img = capture.get(
-                                slice.sourceX,
-                                0,
-                                slice.width,
-                                s.height
-                            );
-                            s.image(img, slice.destX, 0, slice.width, s.height);
-                        }
-                    };
-                }
-            }
-        ];
-
-        let opencvEffects = [
-            {
-                title: "Edge Detection",
-                setup: () => {
-                    const canvas = document.createElement("canvas");
-                    canvas.id = "canvasEdges";
-                    canvas.width = 640;
-                    canvas.height = 480;
-                    canvas.style.display = "none";
-                    document.body.appendChild(canvas);
-                    return canvas.getContext("2d");
-                },
-                process: (ctx, video) => {
-                    ctx.drawImage(video, 0, 0, ctx.canvas.width, ctx.canvas.height);
-                    let src = cv.imread(ctx.canvas);
-                    let dst = new cv.Mat();
-                    cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY);
-                    cv.Canny(src, dst, 50, 100);
-                    cv.imshow(ctx.canvas, dst);
-                    src.delete();
-                    dst.delete();
-                }
-            },
-            {
-                title: "Blur",
-                setup: () => {
-                    const canvas = document.createElement("canvas");
-                    canvas.id = "canvasBlur";
-                    canvas.width = 640;
-                    canvas.height = 480;
-                    canvas.style.display = "none";
-                    document.body.appendChild(canvas);
-                    return canvas.getContext("2d");
-                },
-                process: (ctx, video) => {
-                    ctx.drawImage(video, 0, 0, ctx.canvas.width, ctx.canvas.height);
-                    let src = cv.imread(ctx.canvas);
-                    let dst = new cv.Mat();
-                    cv.GaussianBlur(src, dst, new cv.Size(15, 15), 0);
-                    cv.imshow(ctx.canvas, dst);
-                    src.delete();
-                    dst.delete();
-                }
-            }
-        ];
-
-        let jsEffects = [
-            {
-                title: "Pixelation",
-                setup: () => {
-                    const canvas = document.createElement("canvas");
-                    canvas.id = "canvasPixelation";
-                    canvas.width = 640;
-                    canvas.height = 480;
-                    canvas.style.display = "none";
-                    document.body.appendChild(canvas);
-                    return canvas.getContext("2d");
-                },
-                process: (ctx, video) => {
-                    ctx.drawImage(video, 0, 0, ctx.canvas.width, ctx.canvas.height);
-                    let imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-                    let data = imageData.data;
-                    let pixelSize = 20;
-                    for (let y = 0; y < ctx.canvas.height; y += pixelSize) {
-                        for (let x = 0; x < ctx.canvas.width; x += pixelSize) {
-                            let red = data[(ctx.canvas.width * y + x) * 4];
-                            let green = data[(ctx.canvas.width * y + x) * 4 + 1];
-                            let blue = data[(ctx.canvas.width * y + x) * 4 + 2];
-                            for (let n = 0; n < pixelSize; n++) {
-                                for (let m = 0; m < pixelSize; m++) {
-                                    if (x + m < ctx.canvas.width && y + n < ctx.canvas.height) {
-                                        data[(ctx.canvas.width * (y + n) + (x + m)) * 4] = red;
-                                        data[(ctx.canvas.width * (y + n) + (x + m)) * 4 + 1] = green;
-                                        data[(ctx.canvas.width * (y + n) + (x + m)) * 4 + 2] = blue;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    ctx.putImageData(imageData, 0, 0);
-                }
-            }
-        ];
-
-        let currentSketch = null;
-        let activeButton = null;
-        let video = null;
-        let streaming = false;
-        let activeEffect = null;
-
-        function createButtons() {
-            const buttonsContainer = document.getElementById('buttons-container');
-            buttonsContainer.innerHTML = '';
-            sketches.forEach((sketch, index) => {
-                const button = document.createElement('button');
-                button.textContent = sketch.title;
-                button.onclick = () => toggleSketch(index, button);
-                buttonsContainer.appendChild(button);
-            });
-            opencvEffects.forEach((effect, index) => {
-                const button = document.createElement('button');
-                button.textContent = effect.title;
-                button.onclick = () => toggleEffect(effect, index, button, 'opencv');
-                buttonsContainer.appendChild(button);
-            });
-            jsEffects.forEach((effect, index) => {
-                const button = document.createElement('button');
-                button.textContent = effect.title;
-                button.onclick = () => toggleEffect(effect, index, button, 'js');
-                buttonsContainer.appendChild(button);
-            });
-        }
-
-        function toggleSketch(index, button) {
-            if (activeButton === button) {
-                if (currentSketch) {
-                    currentSketch.remove();
-                    currentSketch = null;
-                }
-                button.classList.remove('active');
-                activeButton = null;
-            } else {
-                if (currentSketch) {
-                    currentSketch.remove();
-                }
-                if (activeButton) {
-                    activeButton.classList.remove('active');
-                }
-                if (activeEffect) {
-                    activeEffect.ctx.canvas.style.display = 'none';
-                    activeEffect = null;
-                }
-                currentSketch = new p5(sketches[index].sketch, 'sketch-container');
-                button.classList.add('active');
-                activeButton = button;
-            }
-        }
-
-        function toggleEffect(effect, index, button, type) {
-            if (activeButton === button) {
-                if (activeEffect) {
-                    activeEffect.ctx.canvas.style.display = 'none';
-                    activeEffect = null;
-                }
-                button.classList.remove('active');
-                activeButton = null;
-            } else {
-                if (currentSketch) {
-                    currentSketch.remove();
-                    currentSketch = null;
-                }
-                if (activeEffect) {
-                    activeEffect.ctx.canvas.style.display = 'none';
-                }
-                if (activeButton) {
-                    activeButton.classList.remove('active');
-                }
-                activeEffect = effect;
-                activeEffect.ctx.canvas.style.display = 'block';
-                button.classList.add('active');
-                activeButton = button;
-                if (!streaming) {
-                    startVideo();
-                }
-            }
-        }
-
-        function startVideo() {
-            video = document.createElement('video');
-            video.width = 640;
-            video.height = 480;
-
-            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-                .then(function(stream) {
-                    video.srcObject = stream;
-                    video.play();
-                })
-                .catch(function(err) {
-                    console.log("An error occurred: " + err);
+            s.resetSketch = function () {
+              slices = [];
+              sliceWidth = s.floor(s.random(6, 41));
+              let numSlices = Math.floor(s.width / sliceWidth);
+              let sourcePositions = Array.from(
+                { length: numSlices },
+                (_, i) => i * sliceWidth
+              );
+              for (let i = sourcePositions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [sourcePositions[i], sourcePositions[j]] = [
+                  sourcePositions[j],
+                  sourcePositions[i],
+                ];
+              }
+              for (let i = 0; i < numSlices; i++) {
+                slices.push({
+                  sourceX: sourcePositions[i],
+                  destX: i * sliceWidth,
+                  width: sliceWidth,
                 });
+              }
+              let remainingPixels = s.width - numSlices * sliceWidth;
+              if (remainingPixels > 0 && slices.length > 0) {
+                let lastSlice = slices[slices.length - 1];
+                lastSlice.width += remainingPixels;
+              }
+            };
 
-            video.addEventListener('canplay', function() {
-                if (!streaming) {
-                    streaming = true;
-                    processFrame();
-                }
-            }, false);
-        }
+            s.draw = function () {
+              s.background(0);
+              for (let slice of slices) {
+                let img = capture.get(slice.sourceX, 0, slice.width, s.height);
+                s.image(img, slice.destX, 0, slice.width, s.height);
+              }
+            };
+          },
+        },
+        {
+          title: "Optical Flow Visualization",
+          sketch: (s) => {
+            let capture,
+              prevPixels,
+              flow,
+              step = 8,
+              sensitivity = 1;
 
-        function processFrame() {
-            if (activeEffect && streaming) {
-                activeEffect.process(activeEffect.ctx, video);
+            s.setup = () => {
+              s.createCanvas(640, 480);
+              capture = s.createCapture(s.VIDEO);
+              capture.size(s.width, s.height);
+              capture.hide();
+              flow = new OpticalFlow(s.width, s.height);
+            };
+
+            s.draw = () => {
+              s.background(0);
+              capture.loadPixels();
+              if (prevPixels && capture.pixels.length)
+                flow.calculate(prevPixels, capture.pixels);
+              s.tint(255, 100);
+              s.image(capture, 0, 0, s.width, s.height);
+              s.noTint();
+              if (flow.flow) {
+                flow.flow.forEach((fz) => {
+                  s.stroke(255);
+                  s.line(
+                    fz.x,
+                    fz.y,
+                    fz.x + fz.u * sensitivity,
+                    fz.y + fz.v * sensitivity
+                  );
+                });
+              }
+              prevPixels = capture.pixels.slice();
+            };
+
+            class FlowZone {
+              constructor(x, y, u, v) {
+                this.x = x;
+                this.y = y;
+                this.u = u;
+                this.v = v;
+              }
             }
-            requestAnimationFrame(processFrame);
-        }
 
-        function onOpenCvReady() {
-            console.log('OpenCV.js is ready');
-            opencvEffects.forEach(effect => {
-                effect.ctx = effect.setup();
-            });
-            jsEffects.forEach(effect => {
-                effect.ctx = effect.setup();
-            });
-            createButtons();
+            class OpticalFlow {
+              constructor(width, height) {
+                this.width = width;
+                this.height = height;
+                this.flow = [];
+              }
+              calculate(oldPixels, newPixels) {
+                const winStep = step * 2 + 1;
+                this.flow = [];
+                for (
+                  let y = step + 1;
+                  y < this.height - step - 1;
+                  y += winStep
+                ) {
+                  for (
+                    let x = step + 1;
+                    x < this.width - step - 1;
+                    x += winStep
+                  ) {
+                    let A2 = 0,
+                      A1B2 = 0,
+                      B1 = 0,
+                      C2 = 0,
+                      C1 = 0;
+                    for (let ly = -step; ly <= step; ly++) {
+                      for (let lx = -step; lx <= step; lx++) {
+                        const addr = ((y + ly) * this.width + (x + lx)) * 4;
+                        const gradX =
+                          (newPixels[addr - 4] - newPixels[addr + 4]) / 255;
+                        const gradY =
+                          (newPixels[addr - this.width * 4] -
+                            newPixels[addr + this.width * 4]) /
+                          255;
+                        const gradT = (oldPixels[addr] - newPixels[addr]) / 255;
+                        A2 += gradX * gradX;
+                        A1B2 += gradX * gradY;
+                        B1 += gradY * gradY;
+                        C2 += gradX * gradT;
+                        C1 += gradY * gradT;
+                      }
+                    }
+                    const delta = A1B2 * A1B2 - A2 * B1,
+                      Idelta = step / delta;
+                    let u = 0,
+                      v = 0;
+                    if (delta) {
+                      u = -(C1 * A1B2 - C2 * B1) * Idelta;
+                      v = -(A1B2 * C2 - A2 * C1) * Idelta;
+                    } else {
+                      const norm = (A1B2 + A2) ** 2 + (B1 + A1B2) ** 2;
+                      if (norm) {
+                        const IGradNorm = step / norm,
+                          temp = -(C1 + C2) * IGradNorm;
+                        u = (A1B2 + A2) * temp;
+                        v = (B1 + A1B2) * temp;
+                      }
+                    }
+                    if (
+                      -winStep < u &&
+                      u < winStep &&
+                      -winStep < v &&
+                      v < winStep
+                    )
+                      this.flow.push(new FlowZone(x, y, u, v));
+                  }
+                }
+              }
+            }
+          },
+        },
+      ];
+
+      let opencvEffects = [
+        {
+          title: "Edge Detection",
+          setup: () => {
+            const canvas = document.createElement("canvas");
+            canvas.id = "canvasEdges";
+            canvas.width = 640;
+            canvas.height = 480;
+            canvas.style.display = "none";
+            document.body.appendChild(canvas);
+            return canvas.getContext("2d");
+          },
+          process: (ctx, video) => {
+            ctx.drawImage(video, 0, 0, ctx.canvas.width, ctx.canvas.height);
+            let src = cv.imread(ctx.canvas);
+            let dst = new cv.Mat();
+            cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY);
+            cv.Canny(src, dst, 50, 100);
+            cv.imshow(ctx.canvas, dst);
+            src.delete();
+            dst.delete();
+          },
+        },
+        {
+          title: "Blur",
+          setup: () => {
+            const canvas = document.createElement("canvas");
+            canvas.id = "canvasBlur";
+            canvas.width = 640;
+            canvas.height = 480;
+            canvas.style.display = "none";
+            document.body.appendChild(canvas);
+            return canvas.getContext("2d");
+          },
+          process: (ctx, video) => {
+            ctx.drawImage(video, 0, 0, ctx.canvas.width, ctx.canvas.height);
+            let src = cv.imread(ctx.canvas);
+            let dst = new cv.Mat();
+            cv.GaussianBlur(src, dst, new cv.Size(15, 15), 0);
+            cv.imshow(ctx.canvas, dst);
+            src.delete();
+            dst.delete();
+          },
+        },
+      ];
+
+      let jsEffects = [
+        {
+          title: "Pixelation",
+          setup: () => {
+            const canvas = document.createElement("canvas");
+            canvas.id = "canvasPixelation";
+            canvas.width = 640;
+            canvas.height = 480;
+            canvas.style.display = "none";
+            document.body.appendChild(canvas);
+            return canvas.getContext("2d");
+          },
+          process: (ctx, video) => {
+            ctx.drawImage(video, 0, 0, ctx.canvas.width, ctx.canvas.height);
+            let imageData = ctx.getImageData(
+              0,
+              0,
+              ctx.canvas.width,
+              ctx.canvas.height
+            );
+            let data = imageData.data;
+            let pixelSize = 20;
+            for (let y = 0; y < ctx.canvas.height; y += pixelSize) {
+              for (let x = 0; x < ctx.canvas.width; x += pixelSize) {
+                let red = data[(ctx.canvas.width * y + x) * 4];
+                let green = data[(ctx.canvas.width * y + x) * 4 + 1];
+                let blue = data[(ctx.canvas.width * y + x) * 4 + 2];
+                for (let n = 0; n < pixelSize; n++) {
+                  for (let m = 0; m < pixelSize; m++) {
+                    if (x + m < ctx.canvas.width && y + n < ctx.canvas.height) {
+                      data[(ctx.canvas.width * (y + n) + (x + m)) * 4] = red;
+                      data[(ctx.canvas.width * (y + n) + (x + m)) * 4 + 1] =
+                        green;
+                      data[(ctx.canvas.width * (y + n) + (x + m)) * 4 + 2] =
+                        blue;
+                    }
+                  }
+                }
+              }
+            }
+            ctx.putImageData(imageData, 0, 0);
+          },
+        },
+      ];
+
+      let currentSketch = null;
+      let activeButton = null;
+      let video = null;
+      let streaming = false;
+      let activeEffect = null;
+
+      function createButtons() {
+        const buttonsContainer = document.getElementById("buttons-container");
+        buttonsContainer.innerHTML = "";
+        sketches.forEach((sketch, index) => {
+          const button = document.createElement("button");
+          button.textContent = sketch.title;
+          button.onclick = () => toggleSketch(index, button);
+          buttonsContainer.appendChild(button);
+        });
+        opencvEffects.forEach((effect, index) => {
+          const button = document.createElement("button");
+          button.textContent = effect.title;
+          button.onclick = () => toggleEffect(effect, index, button, "opencv");
+          buttonsContainer.appendChild(button);
+        });
+        jsEffects.forEach((effect, index) => {
+          const button = document.createElement("button");
+          button.textContent = effect.title;
+          button.onclick = () => toggleEffect(effect, index, button, "js");
+          buttonsContainer.appendChild(button);
+        });
+      }
+
+      function toggleSketch(index, button) {
+        if (activeButton === button) {
+          if (currentSketch) {
+            currentSketch.remove();
+            currentSketch = null;
+          }
+          button.classList.remove("active");
+          activeButton = null;
+        } else {
+          if (currentSketch) {
+            currentSketch.remove();
+          }
+          if (activeButton) {
+            activeButton.classList.remove("active");
+          }
+          if (activeEffect) {
+            activeEffect.ctx.canvas.style.display = "none";
+            activeEffect = null;
+          }
+          currentSketch = new p5(sketches[index].sketch, "sketch-container");
+          button.classList.add("active");
+          activeButton = button;
         }
+      }
+
+      function toggleEffect(effect, index, button, type) {
+        if (activeButton === button) {
+          if (activeEffect) {
+            activeEffect.ctx.canvas.style.display = "none";
+            activeEffect = null;
+          }
+          button.classList.remove("active");
+          activeButton = null;
+        } else {
+          if (currentSketch) {
+            currentSketch.remove();
+            currentSketch = null;
+          }
+          if (activeEffect) {
+            activeEffect.ctx.canvas.style.display = "none";
+          }
+          if (activeButton) {
+            activeButton.classList.remove("active");
+          }
+          activeEffect = effect;
+          activeEffect.ctx.canvas.style.display = "block";
+          button.classList.add("active");
+          activeButton = button;
+          if (!streaming) {
+            startVideo();
+          }
+        }
+      }
+
+      function startVideo() {
+        video = document.createElement("video");
+        video.width = 640;
+        video.height = 480;
+
+        navigator.mediaDevices
+          .getUserMedia({ video: true, audio: false })
+          .then(function (stream) {
+            video.srcObject = stream;
+            video.play();
+          })
+          .catch(function (err) {
+            console.log("An error occurred: " + err);
+          });
+
+        video.addEventListener(
+          "canplay",
+          function () {
+            if (!streaming) {
+              streaming = true;
+              processFrame();
+            }
+          },
+          false
+        );
+      }
+
+      function processFrame() {
+        if (activeEffect && streaming) {
+          activeEffect.process(activeEffect.ctx, video);
+        }
+        requestAnimationFrame(processFrame);
+      }
+
+      function onOpenCvReady() {
+        console.log("OpenCV.js is ready");
+        opencvEffects.forEach((effect) => {
+          effect.ctx = effect.setup();
+        });
+        jsEffects.forEach((effect) => {
+          effect.ctx = effect.setup();
+        });
+        createButtons();
+      }
     </script>
-</body>
+  </body>
 </html>
