@@ -29,6 +29,7 @@
       let streaming = false;
       let p5Instances = {};
 
+      //Effects
       const effects = [
         {
           name: "Video",
@@ -258,6 +259,7 @@
         },
       ];
 
+      // Utility functions
       function startVideo() {
         navigator.mediaDevices
           .getUserMedia({ video: true })
