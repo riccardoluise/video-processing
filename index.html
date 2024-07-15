@@ -20,12 +20,12 @@
         <button id="toggleInvertButton">Toggle Invert Colors (Manual)</button>
         <button id="toggleNoiseButton">Toggle Noise Effect (p5.js)</button>
     </div>
-    <video id="video" width="640" height="480" autoplay=""></video>
-    <canvas id="canvasEdges" width="640" height="480"></canvas>
-    <canvas id="canvasPixelation" width="640" height="480"></canvas>
-    <canvas id="canvasBlur" width="640" height="480"></canvas>
-    <canvas id="canvasInvert" width="640" height="480"></canvas>
-    <script async="" src="https://docs.opencv.org/4.x/opencv.js"></script>
+    <video id="video" autoplay></video>
+    <canvas id="canvasEdges"></canvas>
+    <canvas id="canvasPixelation"></canvas>
+    <canvas id="canvasBlur"></canvas>
+    <canvas id="canvasInvert"></canvas>
+    <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
         const video = document.getElementById('video'),
@@ -52,8 +52,24 @@
                 .catch(err => console.error("Error accessing the camera: " + err));
         }
 
+        function setupCanvasDimensions() {
+            const width = video.videoWidth;
+            const height = video.videoHeight;
+
+            canvasEdges.width = width;
+            canvasEdges.height = height;
+            canvasPixelation.width = width;
+            canvasPixelation.height = height;
+            canvasBlur.width = width;
+            canvasBlur.height = height;
+            canvasInvert.width = width;
+            canvasInvert.height = height;
+        }
+
         function processFrame() {
             if (!streaming) return;
+            setupCanvasDimensions();
+            
             ctxEdges.drawImage(video, 0, 0, canvasEdges.width, canvasEdges.height);
             if (detectEdges && typeof cv !== 'undefined') {
                 let src = cv.imread(canvasEdges), dst = new cv.Mat();
@@ -144,6 +160,7 @@
         video.addEventListener('canplay', () => {
             if (!streaming) {
                 streaming = true;
+                setupCanvasDimensions();
                 processFrame();
             }
         });
