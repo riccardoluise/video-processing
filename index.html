@@ -215,7 +215,7 @@
             sliceSketchInstance = new p5((sketch) => {
                 let capture;
                 let slices = [];
-                let totalWidth = 0;
+                const SLICE_WIDTH = 20; 
 
                 sketch.setup = function () {
                     let cnv = sketch.createCanvas(640, 480);
@@ -229,27 +229,30 @@
 
                 sketch.resetSlices = function () {
                     slices = [];
-                    totalWidth = 0;
-                    while (totalWidth < sketch.width) {
-                        let sliceWidth = sketch.floor(sketch.random(1, 101));
-                        if (totalWidth + sliceWidth > sketch.width) {
-                            sliceWidth = sketch.width - totalWidth;
-                        }
+                    let numSlices = Math.floor(sketch.width / SLICE_WIDTH);
+                    let sourcePositions = Array.from({length: numSlices}, (_, i) => i * SLICE_WIDTH);
+
+                    // Mescola le posizioni di origine
+                    for (let i = sourcePositions.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [sourcePositions[i], sourcePositions[j]] = [sourcePositions[j], sourcePositions[i]];
+                    }
+
+                    // Crea le fette
+                    for (let i = 0; i < numSlices; i++) {
                         slices.push({
-                            sourceX: sketch.floor(sketch.random(sketch.width - sliceWidth)),
-                            width: sliceWidth
+                            sourceX: sourcePositions[i],
+                            destX: i * SLICE_WIDTH,
+                            width: SLICE_WIDTH
                         });
-                        totalWidth += sliceWidth;
                     }
                 };
 
                 sketch.draw = function () {
                     sketch.background(0);
-                    let destX = 0;
                     for (let slice of slices) {
                         let img = capture.get(slice.sourceX, 0, slice.width, sketch.height);
-                        sketch.image(img, destX, 0);
-                        destX += slice.width;
+                        sketch.image(img, slice.destX, 0, slice.width, sketch.height);
                     }
                 };
             });
