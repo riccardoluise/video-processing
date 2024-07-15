@@ -215,7 +215,7 @@
             sliceSketchInstance = new p5((sketch) => {
                 let capture;
                 let slices = [];
-                const SLICE_WIDTH = 20; 
+                let sliceWidth;
 
                 sketch.setup = function () {
                     let cnv = sketch.createCanvas(640, 480);
@@ -229,8 +229,9 @@
 
                 sketch.resetSlices = function () {
                     slices = [];
-                    let numSlices = Math.floor(sketch.width / SLICE_WIDTH);
-                    let sourcePositions = Array.from({length: numSlices}, (_, i) => i * SLICE_WIDTH);
+                    sliceWidth = sketch.floor(sketch.random(6, 41)); // Larghezza casuale tra 2 e 40 pixel
+                    let numSlices = Math.floor(sketch.width / sliceWidth);
+                    let sourcePositions = Array.from({length: numSlices}, (_, i) => i * sliceWidth);
 
                     // Mescola le posizioni di origine
                     for (let i = sourcePositions.length - 1; i > 0; i--) {
@@ -242,10 +243,19 @@
                     for (let i = 0; i < numSlices; i++) {
                         slices.push({
                             sourceX: sourcePositions[i],
-                            destX: i * SLICE_WIDTH,
-                            width: SLICE_WIDTH
+                            destX: i * sliceWidth,
+                            width: sliceWidth
                         });
                     }
+
+                    // Gestisce eventuali pixel rimanenti
+                    let remainingPixels = sketch.width - (numSlices * sliceWidth);
+                    if (remainingPixels > 0 && slices.length > 0) {
+                        let lastSlice = slices[slices.length - 1];
+                        lastSlice.width += remainingPixels;
+                    }
+
+                    console.log(`Nuova larghezza delle fette: ${sliceWidth} pixel`);
                 };
 
                 sketch.draw = function () {
