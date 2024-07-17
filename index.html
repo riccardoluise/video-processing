@@ -374,67 +374,81 @@
           },
         },
         {
-  title: "Rilevamento Movimento Migliorato",
-  sketch: (s) => {
-    let video;
-    let prevFrame;
-    let threshold = 30;
-    let motionPixels = [];
+          title: "Rilevamento Movimento Migliorato",
+          sketch: (s) => {
+            let video;
+            let prevFrame;
+            let threshold = 30;
+            let motionPixels = [];
 
-    s.setup = () => {
-      s.createCanvas(640, 480);
-      video = s.createCapture(s.VIDEO);
-      video.size(s.width, s.height);
-      video.hide();
-      prevFrame = s.createImage(s.width, s.height);
-    };
+            s.setup = () => {
+              s.createCanvas(640, 480);
+              video = s.createCapture(s.VIDEO);
+              video.size(s.width, s.height);
+              video.hide();
+              prevFrame = s.createImage(s.width, s.height);
+            };
 
-    s.draw = () => {
-      video.loadPixels();
-      prevFrame.loadPixels();
+            s.draw = () => {
+              video.loadPixels();
+              prevFrame.loadPixels();
 
-      motionPixels = [];
-      
-      for (let x = 0; x < video.width; x++) {
-        for (let y = 0; y < video.height; y++) {
-          let i = (x + y * video.width) * 4;
-          
-          let currR = video.pixels[i];
-          let currG = video.pixels[i + 1];
-          let currB = video.pixels[i + 2];
-          
-          let prevR = prevFrame.pixels[i];
-          let prevG = prevFrame.pixels[i + 1];
-          let prevB = prevFrame.pixels[i + 2];
-          
-          // Calcolare la differenza di colore utilizzando una media ponderata
-          let diff = Math.abs(0.3 * (currR - prevR) + 0.59 * (currG - prevG) + 0.11 * (currB - prevB));
-          
-          if (diff > threshold) {
-            motionPixels.push({x, y, r: currR, g: currG, b: currB});
-          }
-        }
-      }
+              motionPixels = [];
 
-      s.background(0);
+              for (let x = 0; x < video.width; x++) {
+                for (let y = 0; y < video.height; y++) {
+                  let i = (x + y * video.width) * 4;
 
-      // Disegnare i pixel in movimento
-      for (let pixel of motionPixels) {
-        // s.stroke(pixel.r, pixel.g, pixel.b);
-        s.stroke(255);
-        s.point(pixel.x, pixel.y);
-      }
+                  let currR = video.pixels[i];
+                  let currG = video.pixels[i + 1];
+                  let currB = video.pixels[i + 2];
 
-      // Aggiornare il frame precedente
-      prevFrame.copy(video, 0, 0, s.width, s.height, 0, 0, s.width, s.height);
+                  let prevR = prevFrame.pixels[i];
+                  let prevG = prevFrame.pixels[i + 1];
+                  let prevB = prevFrame.pixels[i + 2];
 
-      // Mostrare informazioni sullo schermo
-      s.fill(255);
-      s.noStroke();
-      s.text(`Pixel in movimento: ${motionPixels.length}`, 10, 20);
-    };
-  },
-}
+                  // Calcolare la differenza di colore utilizzando una media ponderata
+                  let diff = Math.abs(
+                    0.3 * (currR - prevR) +
+                      0.59 * (currG - prevG) +
+                      0.11 * (currB - prevB)
+                  );
+
+                  if (diff > threshold) {
+                    motionPixels.push({ x, y, r: currR, g: currG, b: currB });
+                  }
+                }
+              }
+
+              s.background(0);
+
+              // Disegnare i pixel in movimento
+              for (let pixel of motionPixels) {
+                // s.stroke(pixel.r, pixel.g, pixel.b);
+                s.stroke(255);
+                s.point(pixel.x, pixel.y);
+              }
+
+              // Aggiornare il frame precedente
+              prevFrame.copy(
+                video,
+                0,
+                0,
+                s.width,
+                s.height,
+                0,
+                0,
+                s.width,
+                s.height
+              );
+
+              // Mostrare informazioni sullo schermo
+              s.fill(255);
+              s.noStroke();
+              s.text(`Pixel in movimento: ${motionPixels.length}`, 10, 20);
+            };
+          },
+        },
       ];
 
       let opencvEffects = [
