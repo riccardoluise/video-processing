@@ -449,7 +449,7 @@
             };
           },
         },
-        // 
+        //
         {
           title: "Effetto Mosaico (pixelation clone)",
           sketch: (s) => {
@@ -480,7 +480,7 @@
           },
         },
 
-        // 
+        //
         {
           title: "Effetto Vortice",
           sketch: (s) => {
@@ -516,7 +516,7 @@
           },
         },
 
-        // 
+        //
         {
           title: "Effetto Ondulazione",
           sketch: (s) => {
@@ -581,6 +581,51 @@
                   s.rect(x + gridSize / 2, y + gridSize / 2, size, size);
                 }
               }
+            };
+          },
+        },
+        {
+          title: "Effetto Vortice con Campo di Perlin",
+          sketch: (s) => {
+            let video;
+            let noiseScale = 0.005;
+            let noiseTime = 0;
+
+            s.setup = () => {
+              s.createCanvas(640, 480);
+              video = s.createCapture(s.VIDEO);
+              video.size(s.width, s.height);
+              video.hide();
+            };
+
+            s.draw = () => {
+              s.background(0);
+              video.loadPixels();
+              for (let y = 0; y < video.height; y += 5) {
+                for (let x = 0; x < video.width; x += 5) {
+                  let index = (y * video.width + x) * 4;
+                  let r = video.pixels[index];
+                  let g = video.pixels[index + 1];
+                  let b = video.pixels[index + 2];
+                  s.fill(r, g, b);
+                  s.noStroke();
+
+                  let noiseValue = s.noise(
+                    x * noiseScale,
+                    y * noiseScale,
+                    noiseTime
+                  );
+                  let angle = noiseValue * s.TWO_PI * 2;
+                  let distance = s.dist(x, y, s.width / 2, s.height / 2);
+                  let magnitude = s.map(distance, 0, s.width / 2, 0, 10);
+
+                  let offsetX = s.cos(angle) * magnitude;
+                  let offsetY = s.sin(angle) * magnitude;
+
+                  s.ellipse(x + offsetX, y + offsetY, 5, 5);
+                }
+              }
+              noiseTime += 0.03; // Aumenta lentamente il valore del tempo per il rumore di Perlin
             };
           },
         },
