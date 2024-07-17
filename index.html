@@ -15,21 +15,25 @@
         font-family: Arial, sans-serif;
         text-align: center;
       }
+
       button {
         margin: 10px;
         padding: 10px 20px;
         font-size: 16px;
       }
+
       .active {
         background-color: #4caf50;
         color: white;
       }
+
       canvas {
         display: block;
         margin: 0 auto;
       }
     </style>
   </head>
+
   <body>
     <h1>Webcam Processing</h1>
     <div id="buttons-container"></div>
@@ -316,11 +320,66 @@
           },
         },
         {
-  title: "Sensore di Movimento (Pixel)",
+          title: "Sensore di Movimento (Pixel)",
+          sketch: (s) => {
+            let video;
+            let prevFrame;
+            let threshold = 50;
+
+            s.setup = () => {
+              s.createCanvas(640, 480);
+              video = s.createCapture(s.VIDEO);
+              video.size(s.width, s.height);
+              video.hide();
+              prevFrame = s.createImage(s.width, s.height);
+            };
+
+            s.draw = () => {
+              s.background(0);
+              video.loadPixels();
+              prevFrame.loadPixels();
+
+              s.loadPixels();
+              for (let x = 0; x < video.width; x++) {
+                for (let y = 0; y < video.height; y++) {
+                  let i = (x + y * video.width) * 4;
+                  let currR = video.pixels[i];
+                  let currG = video.pixels[i + 1];
+                  let currB = video.pixels[i + 2];
+
+                  let prevR = prevFrame.pixels[i];
+                  let prevG = prevFrame.pixels[i + 1];
+                  let prevB = prevFrame.pixels[i + 2];
+
+                  let diff = s.dist(currR, currG, currB, prevR, prevG, prevB);
+                  if (diff > threshold) {
+                    s.set(x, y, s.color(255));
+                  }
+                }
+              }
+              s.updatePixels();
+
+              prevFrame.copy(
+                video,
+                0,
+                0,
+                s.width,
+                s.height,
+                0,
+                0,
+                s.width,
+                s.height
+              );
+            };
+          },
+        },
+        {
+  title: "Rilevamento Movimento Migliorato",
   sketch: (s) => {
     let video;
     let prevFrame;
-    let threshold = 50;
+    let threshold = 30;
+    let motionPixels = [];
 
     s.setup = () => {
       s.createCanvas(640, 480);
@@ -331,31 +390,48 @@
     };
 
     s.draw = () => {
-      s.background(0);
       video.loadPixels();
       prevFrame.loadPixels();
 
-      s.loadPixels();
+      motionPixels = [];
+      
       for (let x = 0; x < video.width; x++) {
         for (let y = 0; y < video.height; y++) {
           let i = (x + y * video.width) * 4;
+          
           let currR = video.pixels[i];
           let currG = video.pixels[i + 1];
           let currB = video.pixels[i + 2];
-
+          
           let prevR = prevFrame.pixels[i];
           let prevG = prevFrame.pixels[i + 1];
           let prevB = prevFrame.pixels[i + 2];
-
-          let diff = s.dist(currR, currG, currB, prevR, prevG, prevB);
+          
+          // Calcolare la differenza di colore utilizzando una media ponderata
+          let diff = Math.abs(0.3 * (currR - prevR) + 0.59 * (currG - prevG) + 0.11 * (currB - prevB));
+          
           if (diff > threshold) {
-            s.set(x, y, s.color(255));
+            motionPixels.push({x, y, r: currR, g: currG, b: currB});
           }
         }
       }
-      s.updatePixels();
 
+      s.background(0);
+
+      // Disegnare i pixel in movimento
+      for (let pixel of motionPixels) {
+        // s.stroke(pixel.r, pixel.g, pixel.b);
+        s.stroke(255);
+        s.point(pixel.x, pixel.y);
+      }
+
+      // Aggiornare il frame precedente
       prevFrame.copy(video, 0, 0, s.width, s.height, 0, 0, s.width, s.height);
+
+      // Mostrare informazioni sullo schermo
+      s.fill(255);
+      s.noStroke();
+      s.text(`Pixel in movimento: ${motionPixels.length}`, 10, 20);
     };
   },
 }
